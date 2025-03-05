@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useBudget } from "../hooks/useBudget";
 import type { DraftExpense } from "../types";
 import { categories } from "../data/categories";
 import DatePicker from 'react-date-picker'
@@ -19,6 +20,7 @@ export default function ExpenseForm() {
 
      const [error, setError] = useState('')
 
+     const {dispatch} = useBudget()
 
      const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
           const {name, value} = e.target
@@ -49,7 +51,19 @@ export default function ExpenseForm() {
                return 
           }
 
-          console.log('todo oks')
+          //Agregar un nuevo gasto
+
+          dispatch({type:'add-expense', payload: {expense}})
+
+          //Reiniciar el state
+
+          setExpense({
+               amount:0,
+               expenseName:'',
+               category:'',
+               date: new Date()
+          })
+          
      }
 
   return (
@@ -130,7 +144,8 @@ export default function ExpenseForm() {
           <input 
                type="submit"
                value={'Registrar gasto'}
-               className="bg-blue-600 cursosr-pointer w-full p-2 text-white uppercase font-bold rounded-lg" />
+               className="bg-blue-600 cursosr-pointer w-full p-2 text-white uppercase font-bold rounded-lg" 
+               />
     </form>
   )
 }
