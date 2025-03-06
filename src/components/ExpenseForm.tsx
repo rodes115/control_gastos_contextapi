@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import { useBudget } from "../hooks/useBudget";
 import type { DraftExpense } from "../types";
 import { categories } from "../data/categories";
@@ -20,7 +20,16 @@ export default function ExpenseForm() {
 
      const [error, setError] = useState('')
 
-     const {dispatch} = useBudget()
+     const {dispatch, state} = useBudget()
+
+     useEffect(()=> {
+          if(state.editingId){
+               const editingExpense = state.expenses.filter(currentExpense => currentExpense.id === state.editingId)[0]
+               setExpense(editingExpense)
+          }
+
+     }, [state.editingId])
+
 
      const handleChange = (e: React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>) => {
           const {name, value} = e.target
@@ -30,8 +39,6 @@ export default function ExpenseForm() {
                     ...expense,
                     [name] : isAmountField ? +value : value
                })
-         
-
      }
      
      const handleChangeDate = (value : Value) => {
@@ -51,12 +58,13 @@ export default function ExpenseForm() {
                return 
           }
 
-          //Agregar un nuevo gasto
-
+          //Agregar o Actualizar el gasto
+          if(state.editingId){
+               dispatch({type:'update-expense', payload: {expense : {id: state.editingId, ...expense}}})
+          }else{
           dispatch({type:'add-expense', payload: {expense}})
-
+          }
           //Reiniciar el state
-
           setExpense({
                amount:0,
                expenseName:'',
@@ -66,12 +74,15 @@ export default function ExpenseForm() {
           
      }
 
+     const isEditing = Boolean(state.editingId)
+
+
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
           <legend
           className="uppercase text-center text-2xl font-black border-b-4 border-blue-500 py-2"
           
-          >Nuevo Gasto</legend>
+          >{isEditing && `Editar:${expense.expenseName}`}</legend>
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
