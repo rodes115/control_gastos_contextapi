@@ -8,7 +8,9 @@ export type BudgetActions =
      { type: 'add-expense', payload: { expense: DraftExpense } } |
      { type: 'delete-expense', payload: { id: Expense['id'] } } |
      { type: 'get-expense-by-id', payload: { id: Expense['id'] } } |
-     { type: 'update-expense', payload: { expense: Expense } }
+     { type: 'update-expense', payload: { expense: Expense } } |
+     { type: 'reset-budget' } |
+     { type: 'add-filter-category', payload: {id: Expense['id']}}
 
 
 export type BudgetState = {
@@ -16,13 +18,25 @@ export type BudgetState = {
      model: boolean
      expenses: Expense[]
      editingId: Expense['id']
+     currentCategory: Expense['id']
+}
+
+const initialBudget = (): number => {
+     const localStorageBudget = localStorage.getItem('budget')
+     return localStorageBudget ? +localStorageBudget : 0
+}
+
+const localStorageExpenses = (): Expense[] => {
+     const localStorageExpenses = localStorage.getItem('expenses')
+     return localStorageExpenses ? JSON.parse(localStorageExpenses) : []
 }
 
 export const initialState: BudgetState = {
-     budget: 0,
+     budget: initialBudget(),
      model: false,
-     expenses: [],
-     editingId: ''
+     expenses: localStorageExpenses(),
+     editingId: '',
+     currentCategory: ''
 }
 
 const createExpense = (draftexpense: DraftExpense): Expense => {
@@ -57,7 +71,7 @@ export const budgetReducer = (
           return {
                ...state,
                model: false,
-               editingId:''
+               editingId: ''
           }
      }
 
@@ -89,12 +103,27 @@ export const budgetReducer = (
           }
      }
 
-     if(action.type === 'update-expense'){
-          return{
+     if (action.type === 'update-expense') {
+          return {
                ...state,
                expenses: state.expenses.map(expense => expense.id === action.payload.expense.id ? action.payload.expense : expense),
-               model:false,
-               editingId:''
+               model: false,
+               editingId: ''
+          }
+     }
+
+     if (action.type === 'reset-budget') {
+          return {
+               ...state,
+               budget: 0,
+               expenses:[]
+          }
+     }
+
+     if (action.type === 'add-filter-category') {
+          return {
+               ...state,
+               currentCategory: action.payload.id
           }
      }
 
